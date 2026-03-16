@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Mutual NDA",
+    "description": "A balanced, mutual non-disclosure agreement (NDA) for two parties to share confidential or proprietary information for a specified business purpose. Covers confidential information definitions, receiving party obligations, standard exceptions, and governing law.",
+    "filename": "Mutual-NDA.md"
+  },
+  {
+    "name": "Mutual NDA Cover Page",
+    "description": "The cover page template to accompany the Mutual NDA standard terms. Specifies the business purpose, agreement duration, confidentiality protection period, governing law, and signature blocks for both parties.",
+    "filename": "Mutual-NDA-coverpage.md"
+  },
+  {
+    "name": "Cloud Service Agreement",
+    "description": "A comprehensive SaaS subscription agreement governing access to and use of a cloud-hosted service. Covers service access, user accounts, data privacy, payment terms, liability caps, indemnification, confidentiality, and GDPR compliance hooks.",
+    "filename": "CSA.md"
+  },
+  {
+    "name": "Service Level Agreement",
+    "description": "An SLA addendum that establishes measurable uptime commitments and support response time standards for a cloud service. Defines how downtime is calculated, excludes force majeure events, and provides for service credits and termination rights when targets are missed.",
+    "filename": "SLA.md"
+  },
+  {
+    "name": "Design Partner Agreement",
+    "description": "An agreement for early-access design partners who test and provide structured feedback on a product before general availability. Governs product access, feedback ownership, confidentiality, intellectual property assignment, and use restrictions.",
+    "filename": "Design-Partner-Agreement.md"
+  },
+  {
+    "name": "Professional Services Agreement",
+    "description": "A professional services agreement for engaging a provider to deliver custom work, consulting, or implementation services. Covers deliverables, change orders, acceptance, intellectual property ownership, payment, warranties, indemnification, and insurance.",
+    "filename": "PSA.md"
+  },
+  {
+    "name": "Data Processing Agreement",
+    "description": "A GDPR-compliant data processing agreement (DPA) that governs how a service provider processes personal data on behalf of a customer. Includes provisions for processor/subprocessor relationships, data subject rights, security incident response, international data transfers (EEA SCCs and UK Addendum), and audit rights.",
+    "filename": "DPA.md"
+  },
+  {
+    "name": "Partnership Agreement",
+    "description": "A general commercial partnership agreement for co-marketing, referral, reseller, or integration relationships. Covers each party's obligations, trademark licensing, payment terms, escalation procedures, confidentiality, indemnification, and liability caps.",
+    "filename": "Partnership-Agreement.md"
+  },
+  {
+    "name": "Software License Agreement",
+    "description": "An on-premises or installable software license agreement granting a limited, non-exclusive right to install and use software. Covers license scope and restrictions, open source disclosures, updates, payment, warranty, indemnification, and export controls.",
+    "filename": "Software-License-Agreement.md"
+  },
+  {
+    "name": "Pilot Agreement",
+    "description": "A short-term pilot or proof-of-concept agreement allowing a customer to evaluate a product for a defined period before committing to a long-term subscription. Covers evaluation-only access, restrictions, AS-IS disclaimer, limited liability, confidentiality, and what happens if no definitive agreement is signed.",
+    "filename": "Pilot-Agreement.md"
+  },
+  {
+    "name": "Business Associate Agreement",
+    "description": "A HIPAA-compliant Business Associate Agreement (BAA) between a covered entity and a service provider (business associate) that handles protected health information (PHI). Covers permitted uses and disclosures of PHI, safeguards, subcontractors, breach notification, individual rights, and PHI destruction upon termination.",
+    "filename": "BAA.md"
+  },
+  {
+    "name": "AI Addendum",
+    "description": "An addendum to a cloud service or software agreement that addresses the use of artificial intelligence and machine learning features. Governs input and output ownership, model training restrictions, non-training improvement rights, personal data obligations, and disclaimers about the nature and accuracy of AI-generated content.",
+    "filename": "AI-Addendum.md"
+  }
+]
