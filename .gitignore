@@ -1,0 +1,106 @@
+# ─── Python / FastAPI ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.spec
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.installed.cfg
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# mypy / pyright
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+
+# Alembic (DB migrations output)
+alembic/versions/*.pyc
+
+# ─── Next.js / Node ─────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.nuxt/
+.cache/
+.parcel-cache/
+
+# Build output
+/build
+/dist
+
+# Next.js specific
+next-env.d.ts
+.next/
+*.tsbuildinfo
+
+# npm / yarn / pnpm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ─── Environment & Secrets ──────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# ─── Editors & OS ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Docker ─────────────────────────────────────────────────────────
+.dockerignore
+
+# ─── Logs ───────────────────────────────────────────────────────────
+logs/
+*.log
