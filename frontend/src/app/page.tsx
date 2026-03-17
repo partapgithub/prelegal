@@ -1,51 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import NdaForm from "@/components/NdaForm";
-import NdaPreview from "@/components/NdaPreview";
-import { defaultFormData, NdaFormData } from "@/lib/generateNda";
+import { useRouter } from "next/navigation";
 
-export default function Home() {
-  // I2: lazy initializer so effectiveDate is set at mount time on the client,
-  // avoiding a server/client hydration mismatch from new Date() at module scope.
-  const [formData, setFormData] = useState<NdaFormData>(() => ({
-    ...defaultFormData,
-    effectiveDate: new Date().toISOString().split("T")[0],
-  }));
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      router.push("/dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b shadow-sm print:hidden">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Mutual NDA Creator</h1>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Powered by{" "}
-            <a
-              href="https://commonpaper.com/standards/mutual-nda/1.0/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              CommonPaper Mutual NDA v1.0
-            </a>{" "}
-            · CC BY 4.0
-          </p>
-        </div>
-        <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Prototype</span>
-      </header>
-
-      {/* Two-column layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Form */}
-        <div className="w-80 shrink-0 overflow-y-auto border-r bg-white print:hidden">
-          <NdaForm data={formData} onChange={setFormData} />
+    <div className="min-h-screen flex items-center justify-center bg-[#f9fafb]">
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-brand-navy">Prelegal</h1>
+          <p className="text-brand-gray mt-1">Draft legal agreements in minutes</p>
         </div>
 
-        {/* Right: Preview */}
-        <div className="flex-1 overflow-hidden">
-          <NdaPreview data={formData} />
-        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium text-brand-navy mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-brand-navy mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-brand-purple hover:bg-[#5e2d73] disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 mt-2 transition-colors cursor-pointer"
+          >
+            {loading ? "Signing in…" : "Sign In"}
+          </button>
+        </form>
       </div>
     </div>
   );
