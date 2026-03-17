@@ -19,6 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* I7: font variable applied to html so Tailwind's font-sans picks it up via globals.css */}
       <body className={`${geist.variable} antialiased`}>{children}</body>
     </html>
   );

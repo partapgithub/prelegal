@@ -6,7 +6,12 @@ import NdaPreview from "@/components/NdaPreview";
 import { defaultFormData, NdaFormData } from "@/lib/generateNda";
 
 export default function Home() {
-  const [formData, setFormData] = useState<NdaFormData>(defaultFormData);
+  // I2: lazy initializer so effectiveDate is set at mount time on the client,
+  // avoiding a server/client hydration mismatch from new Date() at module scope.
+  const [formData, setFormData] = useState<NdaFormData>(() => ({
+    ...defaultFormData,
+    effectiveDate: new Date().toISOString().split("T")[0],
+  }));
 
   return (
     <div className="flex flex-col h-screen">

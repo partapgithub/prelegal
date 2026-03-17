@@ -25,6 +25,7 @@ export interface NdaFormData {
   modifications: string;
 }
 
+// I2: effectiveDate left blank — initialized lazily in page.tsx
 export const defaultFormData: NdaFormData = {
   party1Company: "",
   party1Name: "",
@@ -36,8 +37,9 @@ export const defaultFormData: NdaFormData = {
   party2Title: "",
   party2Address: "",
   party2Date: "",
-  purpose: "Evaluating whether to enter into a business relationship with the other party.",
-  effectiveDate: new Date().toISOString().split("T")[0],
+  // I4: lowercase, no trailing period so it reads naturally mid-sentence
+  purpose: "evaluating a potential business relationship with the other party",
+  effectiveDate: "",
   mndaTermYears: "1",
   mndaTermType: "expires",
   confidentialityTermYears: "1",
@@ -47,16 +49,62 @@ export const defaultFormData: NdaFormData = {
   modifications: "",
 };
 
-export function generateCoverPageMarkdown(data: NdaFormData): string {
-  const mndaTerm =
-    data.mndaTermType === "expires"
-      ? `Expires ${data.mndaTermYears} year(s) from Effective Date.`
-      : "Continues until terminated in accordance with the terms of the MNDA.";
+// ─── Markdown escaping helpers (C1) ──────────────────────────────────────────
 
-  const confidentialityTerm =
-    data.confidentialityTermType === "years"
-      ? `${data.confidentialityTermYears} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
-      : "In perpetuity.";
+/** Escape characters that break Markdown table cells. */
+function escapeCell(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, " ");
+}
+
+/** Escape characters that break Markdown inline positions. */
+function escapeInline(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/[_*`[\]]/g, "\\$&");
+}
+
+// ─── Shared term-label resolvers (I6) ────────────────────────────────────────
+
+/** Returns a validated, positive integer for term years (I3). */
+function safeYears(raw: string): number {
+  const n = parseInt(raw, 10);
+  return isNaN(n) || n < 1 ? 1 : n;
+}
+
+/** Full prose sentence for the cover page. */
+export function resolveMndaTermProse(data: NdaFormData): string {
+  return data.mndaTermType === "expires"
+    ? `Expires ${safeYears(data.mndaTermYears)} year(s) from Effective Date.`
+    : "Continues until terminated in accordance with the terms of the MNDA.";
+}
+
+/** Short inline phrase for embedding in Standard Terms sentences. */
+export function resolveMndaTermInline(data: NdaFormData): string {
+  return data.mndaTermType === "expires"
+    ? `${safeYears(data.mndaTermYears)} year(s) from Effective Date`
+    : "the date of termination";
+}
+
+/** Full prose sentence for the cover page. */
+export function resolveConfidentialityTermProse(data: NdaFormData): string {
+  return data.confidentialityTermType === "years"
+    ? `${safeYears(data.confidentialityTermYears)} year(s) from Effective Date, but in the case of trade secrets until Confidential Information is no longer considered a trade secret under applicable laws.`
+    : "In perpetuity.";
+}
+
+/** Short inline phrase for embedding in Standard Terms sentences. */
+export function resolveConfidentialityTermInline(data: NdaFormData): string {
+  return data.confidentialityTermType === "years"
+    ? `${safeYears(data.confidentialityTermYears)} year(s) from Effective Date`
+    : "in perpetuity";
+}
+
+// ─── Document generators ──────────────────────────────────────────────────────
+
+export function generateCoverPageMarkdown(data: NdaFormData): string {
+  const purpose = escapeInline(data.purpose || "[Purpose]");
+  const effectiveDate = escapeInline(data.effectiveDate || "[Effective Date]");
+  const governingLaw = escapeInline(data.governingLaw || "[Fill in state]");
+  const jurisdiction = escapeInline(data.jurisdiction || "[Fill in city or county and state]");
+  const modifications = data.modifications.trim();
 
   return `# Mutual Non-Disclosure Agreement
 
@@ -67,66 +115,63 @@ This Mutual Non-Disclosure Agreement (the "MNDA") consists of: (1) this Cover Pa
 ### Purpose
 *How Confidential Information may be used*
 
-${data.purpose}
+${purpose}
 
 ### Effective Date
-${data.effectiveDate}
+${effectiveDate}
 
 ### MNDA Term
 *The length of this MNDA*
 
-${mndaTerm}
+${resolveMndaTermProse(data)}
 
 ### Term of Confidentiality
 *How long Confidential Information is protected*
 
-${confidentialityTerm}
+${resolveConfidentialityTermProse(data)}
 
 ### Governing Law & Jurisdiction
-Governing Law: ${data.governingLaw || "[Fill in state]"}
+Governing Law: ${governingLaw}
 
-Jurisdiction: ${data.jurisdiction || "[Fill in city or county and state]"}
+Jurisdiction: ${jurisdiction}
 
-${data.modifications ? `### MNDA Modifications\n${data.modifications}\n` : ""}
+${modifications ? `### MNDA Modifications\n${modifications}\n` : ""}
 By signing this Cover Page, each party agrees to enter into this MNDA as of the Effective Date.
 
-|  | PARTY 1 | PARTY 2 |
+| | PARTY 1 | PARTY 2 |
 |:---|:---:|:---:|
 | **Signature** | | |
-| **Print Name** | ${data.party1Name} | ${data.party2Name} |
-| **Title** | ${data.party1Title} | ${data.party2Title} |
-| **Company** | ${data.party1Company} | ${data.party2Company} |
-| **Notice Address** | ${data.party1Address} | ${data.party2Address} |
-| **Date** | ${data.party1Date} | ${data.party2Date} |
+| **Print Name** | ${escapeCell(data.party1Name)} | ${escapeCell(data.party2Name)} |
+| **Title** | ${escapeCell(data.party1Title)} | ${escapeCell(data.party2Title)} |
+| **Company** | ${escapeCell(data.party1Company)} | ${escapeCell(data.party2Company)} |
+| **Notice Address** | ${escapeCell(data.party1Address)} | ${escapeCell(data.party2Address)} |
+| **Date** | ${escapeCell(data.party1Date)} | ${escapeCell(data.party2Date)} |
 
 *Common Paper Mutual Non-Disclosure Agreement (Version 1.0) free to use under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).*`;
 }
 
-// The Standard Terms text with placeholders replaced by actual values
 export function generateStandardTerms(data: NdaFormData): string {
-  const mndaTermLabel =
-    data.mndaTermType === "expires"
-      ? `${data.mndaTermYears} year(s) from Effective Date`
-      : "until terminated";
-
-  const confidentialityTermLabel =
-    data.confidentialityTermType === "years"
-      ? `${data.confidentialityTermYears} year(s) from Effective Date`
-      : "in perpetuity";
+  // I4: purpose used inline — already lowercase, no trailing period
+  const purpose = escapeInline(data.purpose || "the Purpose");
+  const effectiveDate = escapeInline(data.effectiveDate || "the Effective Date");
+  const governingLaw = escapeInline(data.governingLaw || "[Governing Law]");
+  const jurisdiction = escapeInline(data.jurisdiction || "[Jurisdiction]");
+  const mndaTermInline = resolveMndaTermInline(data);
+  const confidentialityTermInline = resolveConfidentialityTermInline(data);
 
   return `---
 
 # Standard Terms
 
-1. **Introduction**. This Mutual Non-Disclosure Agreement (which incorporates these Standard Terms and the Cover Page (defined below)) ("**MNDA**") allows each party ("**Disclosing Party**") to disclose or make available information in connection with the **${data.purpose || "Purpose"}** which (1) the Disclosing Party identifies to the receiving party ("**Receiving Party**") as "confidential", "proprietary", or the like or (2) should be reasonably understood as confidential or proprietary due to its nature and the circumstances of its disclosure ("**Confidential Information**"). Each party's Confidential Information also includes the existence and status of the parties' discussions and information on the Cover Page. Confidential Information includes technical or business information, product designs or roadmaps, requirements, pricing, security and compliance documentation, technology, inventions and know-how. To use this MNDA, the parties must complete and sign a cover page incorporating these Standard Terms ("**Cover Page**"). Each party is identified on the Cover Page and capitalized terms have the meanings given herein or on the Cover Page.
+1. **Introduction**. This Mutual Non-Disclosure Agreement (which incorporates these Standard Terms and the Cover Page (defined below)) ("**MNDA**") allows each party ("**Disclosing Party**") to disclose or make available information in connection with **${purpose}** which (1) the Disclosing Party identifies to the receiving party ("**Receiving Party**") as "confidential", "proprietary", or the like or (2) should be reasonably understood as confidential or proprietary due to its nature and the circumstances of its disclosure ("**Confidential Information**"). Each party's Confidential Information also includes the existence and status of the parties' discussions and information on the Cover Page. Confidential Information includes technical or business information, product designs or roadmaps, requirements, pricing, security and compliance documentation, technology, inventions and know-how. To use this MNDA, the parties must complete and sign a cover page incorporating these Standard Terms ("**Cover Page**"). Each party is identified on the Cover Page and capitalized terms have the meanings given herein or on the Cover Page.
 
-2. **Use and Protection of Confidential Information**. The Receiving Party shall: (a) use Confidential Information solely for the **${data.purpose || "Purpose"}**; (b) not disclose Confidential Information to third parties without the Disclosing Party's prior written approval, except that the Receiving Party may disclose Confidential Information to its employees, agents, advisors, contractors and other representatives having a reasonable need to know for the **${data.purpose || "Purpose"}**, provided these representatives are bound by confidentiality obligations no less protective of the Disclosing Party than the applicable terms in this MNDA and the Receiving Party remains responsible for their compliance with this MNDA; and (c) protect Confidential Information using at least the same protections the Receiving Party uses for its own similar information but no less than a reasonable standard of care.
+2. **Use and Protection of Confidential Information**. The Receiving Party shall: (a) use Confidential Information solely for **${purpose}**; (b) not disclose Confidential Information to third parties without the Disclosing Party's prior written approval, except that the Receiving Party may disclose Confidential Information to its employees, agents, advisors, contractors and other representatives having a reasonable need to know for **${purpose}**, provided these representatives are bound by confidentiality obligations no less protective of the Disclosing Party than the applicable terms in this MNDA and the Receiving Party remains responsible for their compliance with this MNDA; and (c) protect Confidential Information using at least the same protections the Receiving Party uses for its own similar information but no less than a reasonable standard of care.
 
 3. **Exceptions**. The Receiving Party's obligations in this MNDA do not apply to information that it can demonstrate: (a) is or becomes publicly available through no fault of the Receiving Party; (b) it rightfully knew or possessed prior to receipt from the Disclosing Party without confidentiality restrictions; (c) it rightfully obtained from a third party without confidentiality restrictions; or (d) it independently developed without using or referencing the Confidential Information.
 
 4. **Disclosures Required by Law**. The Receiving Party may disclose Confidential Information to the extent required by law, regulation or regulatory authority, subpoena or court order, provided (to the extent legally permitted) it provides the Disclosing Party reasonable advance notice of the required disclosure and reasonably cooperates, at the Disclosing Party's expense, with the Disclosing Party's efforts to obtain confidential treatment for the Confidential Information.
 
-5. **Term and Termination**. This MNDA commences on the **${data.effectiveDate || "Effective Date"}** and expires at the end of the **${mndaTermLabel}**. Either party may terminate this MNDA for any or no reason upon written notice to the other party. The Receiving Party's obligations relating to Confidential Information will survive for the **${confidentialityTermLabel}**, despite any expiration or termination of this MNDA.
+5. **Term and Termination**. This MNDA commences on **${effectiveDate}** and expires at the end of **${mndaTermInline}**. Either party may terminate this MNDA for any or no reason upon written notice to the other party. The Receiving Party's obligations relating to Confidential Information will survive for **${confidentialityTermInline}**, despite any expiration or termination of this MNDA.
 
 6. **Return or Destruction of Confidential Information**. Upon expiration or termination of this MNDA or upon the Disclosing Party's earlier request, the Receiving Party will: (a) cease using Confidential Information; (b) promptly after the Disclosing Party's written request, destroy all Confidential Information in the Receiving Party's possession or control or return it to the Disclosing Party; and (c) if requested by the Disclosing Party, confirm its compliance with these obligations in writing. As an exception to subsection (b), the Receiving Party may retain Confidential Information in accordance with its standard backup or record retention policies or as required by law, but the terms of this MNDA will continue to apply to the retained Confidential Information.
 
@@ -134,7 +179,7 @@ export function generateStandardTerms(data: NdaFormData): string {
 
 8. **Disclaimer**. ALL CONFIDENTIAL INFORMATION IS PROVIDED "AS IS", WITH ALL FAULTS, AND WITHOUT WARRANTIES, INCLUDING THE IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
-9. **Governing Law and Jurisdiction**. This MNDA and all matters relating hereto are governed by, and construed in accordance with, the laws of the State of **${data.governingLaw || "[Governing Law]"}**, without regard to the conflict of laws provisions of such **${data.governingLaw || "[Governing Law]"}**. Any legal suit, action, or proceeding relating to this MNDA must be instituted in the federal or state courts located in **${data.jurisdiction || "[Jurisdiction]"}**. Each party irrevocably submits to the exclusive jurisdiction of such **${data.jurisdiction || "[Jurisdiction]"}** in any such suit, action, or proceeding.
+9. **Governing Law and Jurisdiction**. This MNDA and all matters relating hereto are governed by, and construed in accordance with, the laws of the State of **${governingLaw}**, without regard to the conflict of laws provisions of such **${governingLaw}**. Any legal suit, action, or proceeding relating to this MNDA must be instituted in the federal or state courts located in **${jurisdiction}**. Each party irrevocably submits to the exclusive jurisdiction of such **${jurisdiction}** in any such suit, action, or proceeding.
 
 10. **Equitable Relief**. A breach of this MNDA may cause irreparable harm for which monetary damages are an insufficient remedy. Upon a breach of this MNDA, the Disclosing Party is entitled to seek appropriate equitable relief, including an injunction, in addition to its other remedies.
 
