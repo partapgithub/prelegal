@@ -86,3 +86,29 @@ Colors are declared as Tailwind v4 `@theme` tokens in `frontend/src/app/globals.
   - `components/DocumentChat.tsx` — generic chat (same SSE pattern as NdaChat, parameterized by `DocConfig`)
   - `components/DocumentPreview.tsx` — fetches standard terms from backend, renders cover page + sanitized template markdown
   - `app/document/[slug]/page.tsx` + `DocumentPageClient.tsx` — server/client split required by Next.js static export + `generateStaticParams`
+
+## PL-7 — Multi-user auth, document persistence, polish, disclaimer
+- **Real authentication**: HTTP-only cookie sessions backed by SQLite. PBKDF2-HMAC-SHA256 password hashing (stdlib only, no extra deps). `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`. `COOKIE_SECURE` env var (default `true`; set `false` in `.env` for local HTTP dev).
+- **Database schema additions** (`db.py`): `password_hash` column on `users`, new `sessions` table (token, user_id, expires_at), new `saved_documents` table (user_id, doc_type, doc_name, fields JSON).
+- **Document persistence**: `GET/POST/PUT/DELETE /api/saved-documents` — all auth-protected. Save button on every document page. Saved docs load via `?doc={id}` query param. History section on dashboard with Open/Delete.
+- **Frontend auth**: `lib/auth.ts` — `useAuth(redirectIfUnauth)` hook (calls `/api/auth/me`, redirects to `/` if 401). `lib/useSaveDocument.ts` — save/update hook with in-flight guard. All document pages guard with `useAuth(true)`.
+- **UI polish**: Sign-up/sign-in toggle on login card with error messages; user email + Sign out in `AppHeader`; "My Documents" history section on dashboard; Save/Update button in subheader of all document pages.
+- **Legal disclaimer**: Amber banner in both `NdaPreview` and `DocumentPreview` — "AI Draft — Not Legal Advice" (hidden on print).
+
+## PL-5 — AI chat for Mutual NDA
+- Streaming AI chat interface replaces the static NDA form
+- Backend: `POST /api/chat/nda` streams SSE (text deltas + field extraction). Two LiteLLM calls per turn: stream for conversational reply, non-stream for structured field extraction via `_NdaFields` Pydantic schema
+- Frontend: `NdaChat.tsx` (manual SSE reader via ReadableStream, not EventSource), `NdaPreview.tsx` (live Markdown render), `nda/page.tsx` owns shared state
+- Document generation is entirely client-side in `lib/generateNda.ts` (cover page + standard terms as TypeScript string templates)
+
+## PL-6 — Expand to all supported legal document types
+- All 12 document types are now active in the dashboard (no more "Coming Soon")
+- `Mutual-NDA-coverpage.md` routes to `/nda` (same flow as Mutual NDA)
+- All other 10 document types get generic chat+preview pages at `/document/[slug]`
+- **Backend**: `POST /api/chat/document` — generic streaming SSE endpoint; accepts `docType` filename, reads party roles from a config map, uses `_GenericDocFields` schema (party info, dates, term, description, fees, governing law). System prompt includes full catalog so AI can handle unsupported document requests and suggest alternatives. `GET /api/documents/template/{filename}` — serves raw template markdown (validated against catalog allowlist, cached).
+- **Frontend**:
+  - `lib/documentTypes.ts` — maps slugs to document config (name, filename, party1Role, party2Role)
+  - `lib/generateDocument.ts` — `DocFormData` type + `generateCoverPage()` (cover page with key terms table + signature block)
+  - `components/DocumentChat.tsx` — generic chat (same SSE pattern as NdaChat, parameterized by `DocConfig`)
+  - `components/DocumentPreview.tsx` — fetches standard terms from backend, renders cover page + sanitized template markdown
+  - `app/document/[slug]/page.tsx` + `DocumentPageClient.tsx` — server/client split required by Next.js static export + `generateStaticParams`

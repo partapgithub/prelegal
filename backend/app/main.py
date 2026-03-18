@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / ".env")
 
 from app.db import init_db
-from app.routers import auth, chat, documents
+from app.routers import auth, chat, documents, saved_documents
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app = FastAPI(title="Prelegal API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -31,6 +32,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
+app.include_router(saved_documents.router, prefix="/api")
 
 STATIC_DIR = Path(os.getenv("STATIC_DIR", Path(__file__).parent.parent / "static"))
 

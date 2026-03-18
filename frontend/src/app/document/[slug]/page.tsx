@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { DOCUMENT_CONFIGS, ALL_SLUGS } from "@/lib/documentTypes";
 import DocumentPageClient from "./DocumentPageClient";
 
@@ -11,8 +12,11 @@ interface PageProps {
 
 export default function DocumentPage({ params }: PageProps) {
   const config = DOCUMENT_CONFIGS[params.slug];
-  // Unknown slugs are not generated at build time; static export falls back to root index.html
   if (!config) return null;
 
-  return <DocumentPageClient config={config} />;
+  return (
+    <Suspense>
+      <DocumentPageClient config={config} />
+    </Suspense>
+  );
 }
