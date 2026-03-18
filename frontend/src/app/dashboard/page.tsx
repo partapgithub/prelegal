@@ -12,6 +12,17 @@ interface CatalogEntry {
 
 const FILENAME_TO_ROUTE: Record<string, string> = {
   "Mutual-NDA.md": "/nda",
+  "Mutual-NDA-coverpage.md": "/nda",
+  "CSA.md": "/document/CSA",
+  "SLA.md": "/document/SLA",
+  "Design-Partner-Agreement.md": "/document/Design-Partner-Agreement",
+  "PSA.md": "/document/PSA",
+  "DPA.md": "/document/DPA",
+  "Partnership-Agreement.md": "/document/Partnership-Agreement",
+  "Software-License-Agreement.md": "/document/Software-License-Agreement",
+  "Pilot-Agreement.md": "/document/Pilot-Agreement",
+  "BAA.md": "/document/BAA",
+  "AI-Addendum.md": "/document/AI-Addendum",
 };
 
 export default function DashboardPage() {

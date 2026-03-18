@@ -68,3 +68,21 @@ Colors are declared as Tailwind v4 `@theme` tokens in `frontend/src/app/globals.
 - **Frontend**: Login page at `/` (fake — any credentials accepted, navigates to `/dashboard`). Dashboard at `/dashboard` shows all 12 document types from catalog; only Mutual NDA is active, rest show "Coming Soon". Brand color scheme applied throughout.
 - **Infrastructure**: Two-stage Dockerfile (Node builder → Python runtime), start/stop scripts for Mac, Linux, Windows. Backend at `http://localhost:8000`.
 - **Not yet built**: Real authentication, AI chat, document persistence, document types beyond Mutual NDA.
+
+## PL-5 — AI chat for Mutual NDA
+- Streaming AI chat interface replaces the static NDA form
+- Backend: `POST /api/chat/nda` streams SSE (text deltas + field extraction). Two LiteLLM calls per turn: stream for conversational reply, non-stream for structured field extraction via `_NdaFields` Pydantic schema
+- Frontend: `NdaChat.tsx` (manual SSE reader via ReadableStream, not EventSource), `NdaPreview.tsx` (live Markdown render), `nda/page.tsx` owns shared state
+- Document generation is entirely client-side in `lib/generateNda.ts` (cover page + standard terms as TypeScript string templates)
+
+## PL-6 — Expand to all supported legal document types
+- All 12 document types are now active in the dashboard (no more "Coming Soon")
+- `Mutual-NDA-coverpage.md` routes to `/nda` (same flow as Mutual NDA)
+- All other 10 document types get generic chat+preview pages at `/document/[slug]`
+- **Backend**: `POST /api/chat/document` — generic streaming SSE endpoint; accepts `docType` filename, reads party roles from a config map, uses `_GenericDocFields` schema (party info, dates, term, description, fees, governing law). System prompt includes full catalog so AI can handle unsupported document requests and suggest alternatives. `GET /api/documents/template/{filename}` — serves raw template markdown (validated against catalog allowlist, cached).
+- **Frontend**:
+  - `lib/documentTypes.ts` — maps slugs to document config (name, filename, party1Role, party2Role)
+  - `lib/generateDocument.ts` — `DocFormData` type + `generateCoverPage()` (cover page with key terms table + signature block)
+  - `components/DocumentChat.tsx` — generic chat (same SSE pattern as NdaChat, parameterized by `DocConfig`)
+  - `components/DocumentPreview.tsx` — fetches standard terms from backend, renders cover page + sanitized template markdown
+  - `app/document/[slug]/page.tsx` + `DocumentPageClient.tsx` — server/client split required by Next.js static export + `generateStaticParams`
