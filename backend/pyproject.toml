@@ -7,4 +7,5 @@ dependencies = [
     "uvicorn[standard]>=0.34",
     "aiosqlite>=0.20",
     "python-dotenv>=1.0",
+    "litellm>=1.55",
 ]

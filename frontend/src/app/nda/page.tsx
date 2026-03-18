@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AppHeader from "@/components/AppHeader";
-import NdaForm from "@/components/NdaForm";
+import NdaChat from "@/components/NdaChat";
 import NdaPreview from "@/components/NdaPreview";
 import { defaultFormData, NdaFormData } from "@/lib/generateNda";
 
@@ -37,9 +37,9 @@ export default function NdaPage() {
 
       {/* Two-column layout */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Form */}
-        <div className="w-80 shrink-0 overflow-y-auto border-r bg-white print:hidden">
-          <NdaForm data={formData} onChange={setFormData} />
+        {/* Left: AI Chat */}
+        <div className="w-96 shrink-0 flex flex-col border-r bg-white print:hidden">
+          <NdaChat data={formData} onChange={setFormData} />
         </div>
 
         {/* Right: Preview */}
