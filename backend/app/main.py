@@ -2,12 +2,15 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
+load_dotenv(dotenv_path=Path(__file__).parent.parent.parent / ".env")
+
 from app.db import init_db
-from app.routers import auth, documents
+from app.routers import auth, chat, documents
 
 
 @asynccontextmanager
@@ -26,6 +29,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/api")
+app.include_router(chat.router, prefix="/api")
 app.include_router(documents.router, prefix="/api")
 
 STATIC_DIR = Path(os.getenv("STATIC_DIR", Path(__file__).parent.parent / "static"))
